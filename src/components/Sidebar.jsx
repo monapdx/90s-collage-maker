@@ -1,6 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 export default function Sidebar({ groups, onAdd }) {
+  const BASE = import.meta.env.BASE_URL;
+
+  const resolveSrc = (src) => {
+    if (!src) return src;
+    // Leave absolute URLs alone
+    if (/^https?:\/\//i.test(src)) return src;
+    // Strip leading slash so BASE_URL can prefix correctly on GitHub Pages
+    const clean = String(src).replace(/^\/+/, "");
+    return `${BASE}${clean}`;
+  };
+
   const safeGroups = Array.isArray(groups) ? groups : [];
   const firstId = safeGroups[0]?.id ?? "";
 
@@ -67,13 +78,13 @@ export default function Sidebar({ groups, onAdd }) {
             className="thumb"
             draggable
             onDragStart={(e) => {
-              e.dataTransfer.setData("text/plain", it.src);
+              e.dataTransfer.setData("text/plain", resolveSrc(it.src));
             }}
-            onDoubleClick={() => onAdd(it.src)}
-            onClick={() => onAdd(it.src)}
+            onDoubleClick={() => onAdd(resolveSrc(it.src))}
+            onClick={() => onAdd(resolveSrc(it.src))}
             title={it.label}
           >
-            <img src={it.src} alt={it.label ?? it.id} loading="lazy" />
+            <img src={resolveSrc(it.src)} alt={it.label ?? it.id} loading="lazy" />
             <div className="thumbLabel">{it.label ?? it.id}</div>
           </div>
         ))}

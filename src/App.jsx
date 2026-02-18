@@ -3,10 +3,20 @@ import Sidebar from "./components/Sidebar";
 import Toolbar from "./components/Toolbar";
 import CanvasStage from "./components/CanvasStage";
 import { PRESETS } from "./lib/canvasPresets";
-import { addImageToCanvas, bringForward, sendBackwards, bringToFront, sendToBack, duplicateActive, deleteActive } from "./lib/fabricUtils";
+import {
+  addImageToCanvas,
+  bringForward,
+  sendBackwards,
+  bringToFront,
+  sendToBack,
+  duplicateActive,
+  deleteActive
+} from "./lib/fabricUtils";
 import { createHistory } from "./lib/history";
 
 export default function App() {
+  const BASE = import.meta.env.BASE_URL;
+
   const [groups, setGroups] = useState([]);
   const [presetId, setPresetId] = useState(PRESETS[0].id);
   const [customSize, setCustomSize] = useState({ w: 1080, h: 1080 });
@@ -21,13 +31,13 @@ export default function App() {
     return { w: p.w, h: p.h };
   }, [presetId, customSize]);
 
-  // Load manifest
+  // Load manifest (MUST respect GitHub Pages base path)
   useEffect(() => {
-    fetch("/manifest.json")
+    fetch(`${BASE}manifest.json`)
       .then((r) => r.json())
       .then((data) => setGroups(Array.isArray(data) ? data : []))
       .catch(() => setGroups([]));
-  }, []);
+  }, [BASE]);
 
   const onCanvasReady = (c) => {
     canvasRef.current = c;
@@ -86,23 +96,18 @@ export default function App() {
   const undo = () => historyRef.current?.undo?.();
   const redo = () => historyRef.current?.redo?.();
 
-  // When size changes, remount CanvasStage by key (simple MVP approach).
-  // Also cleanup old history listeners.
-  useEffect(() => {
-    return () => {
-      cleanupHistoryRef.current?.();
-    };
-  }, [presetId, size.w, size.h]);
-
   return (
-    <div className="app">
+    <div className="appShell">
       <Sidebar groups={groups} onAdd={addSticker} />
 
       <main className="main">
         <Toolbar
           presetId={presetId}
           setPresetId={setPresetId}
-          onCustomSize={(w, h) => setCustomSize({ w, h })}
+          customSize={customSize}
+          setCustomSize={setCustomSize}
+          size={size}
+          onExport={exportPNG}
           onUndo={undo}
           onRedo={redo}
           onBringForward={() => bringForward(canvasRef.current)}
@@ -111,28 +116,9 @@ export default function App() {
           onSendToBack={() => sendToBack(canvasRef.current)}
           onDuplicate={() => duplicateActive(canvasRef.current)}
           onDelete={() => deleteActive(canvasRef.current)}
-          onExport={exportPNG}
         />
 
-        <div className="stageOuter">
-          <div className="stageFrame">
-            <CanvasStage
-              key={`${size.w}x${size.h}`} // remount on size change
-              width={size.w}
-              height={size.h}
-              onCanvasReady={(c) => {
-                const teardownDnD = onCanvasReady(c);
-                // return teardown function if needed later
-                return teardownDnD;
-              }}
-            />
-          </div>
-
-          <div className="stageMeta">
-            Canvas: <strong>{size.w}×{size.h}</strong>
-            <span className="stageTip">Tip: hold Shift while resizing to keep proportions (Fabric behavior varies by version).</span>
-          </div>
-        </div>
+        <CanvasStage size={size} onReady={onCanvasReady} />
       </main>
     </div>
   );
