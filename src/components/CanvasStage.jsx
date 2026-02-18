@@ -6,6 +6,7 @@ export default function CanvasStage({ size, onReady }) {
   const canvasElRef = useRef(null);
   const fabricRef = useRef(null);
 
+  // Create canvas once
   useEffect(() => {
     const el = canvasElRef.current;
     if (!el) return;
@@ -13,8 +14,11 @@ export default function CanvasStage({ size, onReady }) {
     const canvas = new Canvas(el, {
       preserveObjectStacking: true,
       selection: true,
-      backgroundColor: "#ffffff",
     });
+
+    // Fabric v6 background
+    canvas.backgroundColor = "#ffffff";
+    canvas.requestRenderAll();
 
     fabricRef.current = canvas;
 
@@ -26,9 +30,9 @@ export default function CanvasStage({ size, onReady }) {
       } catch {}
       fabricRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Fit to container
   useEffect(() => {
     const canvas = fabricRef.current;
     const wrap = wrapRef.current;
@@ -50,7 +54,8 @@ export default function CanvasStage({ size, onReady }) {
       canvas.setHeight(dispH);
       canvas.setZoom(scale);
 
-      canvas.setBackgroundColor("#ffffff", canvas.renderAll.bind(canvas));
+      // Fabric v6 background
+      canvas.backgroundColor = "#ffffff";
       canvas.requestRenderAll();
 
       canvas.__displayZoom = scale;
@@ -63,6 +68,7 @@ export default function CanvasStage({ size, onReady }) {
     ro.observe(wrap);
 
     window.addEventListener("resize", fit);
+
     return () => {
       window.removeEventListener("resize", fit);
       ro.disconnect();
@@ -72,13 +78,19 @@ export default function CanvasStage({ size, onReady }) {
   return (
     <div className="stageOuter">
       <div className="stageFrame" ref={wrapRef}>
-        <div className="canvasWrap" style={{ display: "grid", placeItems: "center" }}>
+        <div
+          className="canvasWrap"
+          style={{ display: "grid", placeItems: "center" }}
+        >
           <canvas ref={canvasElRef} />
         </div>
 
         <div className="stageMeta">
           Canvas: {size.w}×{size.h}
-          <span className="stageTip"> • Drag stickers from the sidebar</span>
+          <span className="stageTip">
+            {" "}
+            • Drag stickers from the sidebar
+          </span>
         </div>
       </div>
     </div>
