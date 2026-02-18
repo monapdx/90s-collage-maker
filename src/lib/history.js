@@ -5,13 +5,12 @@ export function createHistory(canvas, { limit = 40 } = {}) {
 
   const save = () => {
     if (isApplying) return;
+
     const json = canvas.toJSON();
 
-
-
-    // Drop redo branch
     stack = stack.slice(0, index + 1);
     stack.push(json);
+
     if (stack.length > limit) stack.shift();
     index = stack.length - 1;
   };
@@ -19,6 +18,7 @@ export function createHistory(canvas, { limit = 40 } = {}) {
   const apply = (json) =>
     new Promise((resolve) => {
       isApplying = true;
+
       canvas.loadFromJSON(json, () => {
         canvas.requestRenderAll();
         isApplying = false;
@@ -40,6 +40,7 @@ export function createHistory(canvas, { limit = 40 } = {}) {
 
   const init = () => {
     save();
+
     const handler = () => save();
 
     canvas.on("object:added", handler);
