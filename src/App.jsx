@@ -23,81 +23,67 @@ export default function App() {
 
   const canvasRef = useRef(null);
   const historyRef = useRef(null);
-  const cleanupHistoryRef = useRef(null);
 
+  // Resolve logical canvas size
   const size = useMemo(() => {
     if (presetId === "custom") return customSize;
-    const p = PRESETS.find((x) => x.id === presetId) ?? PRESETS[0];
-    return { w: p.w, h: p.h };
+    const preset = PRESETS.find((p) => p.id === presetId) || PRESETS[0];
+    return { w: preset.w, h: preset.h };
   }, [presetId, customSize]);
 
-  // Load manifest (MUST respect GitHub Pages base path)
+  // Load sticker manifest (GitHub Pages safe)
   useEffect(() => {
     fetch(`${BASE}manifest.json`)
       .then((r) => r.json())
-      .then((data) => setGroups(Array.isArray(data) ? data : []))
-      .catch(() => setGroups([]));
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setGroups(data);
+        } else {
+          setGroups([]);
+        }
+      })
+      .catch((err) => {
+        console.error("Manifest load error:", err);
+        setGroups([]);
+      });
   }, [BASE]);
 
-  const onCanvasReady = (c) => {
-    canvasRef.current = c;
+  // Fabric canvas ready
+  const handleCanvasReady = (canvas) => {
+    canvasRef.current = canvas;
 
-    // Attach history
-    historyRef.current = createHistory(c);
-    cleanupHistoryRef.current = historyRef.current.init();
-
-    // Allow drop-to-add
-    const upper = c.upperCanvasEl;
-    const handleDragOver = (e) => e.preventDefault();
-    const handleDrop = async (e) => {
-      e.preventDefault();
-      const src = e.dataTransfer.getData("text/plain");
-      if (!src) return;
-
-      const rect = upper.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      // Fabric canvas coords are already 1:1 here (no zoom in MVP)
-      await addImageToCanvas(c, src, { left: x, top: y });
-    };
-
-    upper.addEventListener("dragover", handleDragOver);
-    upper.addEventListener("drop", handleDrop);
-
-    return () => {
-      upper.removeEventListener("dragover", handleDragOver);
-      upper.removeEventListener("drop", handleDrop);
-    };
+    // Setup undo/redo history
+    historyRef.current = createHistory(canvas);
+    historyRef.current.init();
   };
 
+  // Add image from sidebar
   const addSticker = async (src) => {
-    const c = canvasRef.current;
-    if (!c) return;
-    await addImageToCanvas(c, src);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    await addImageToCanvas(canvas, src);
   };
 
+  // Export full-resolution PNG (ignores display zoom)
   const exportPNG = () => {
-    const c = canvasRef.current;
-    if (!c) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    // Export at full canvas resolution
-    const dataUrl = c.toDataURL({
+    const zoom = canvas.__displayZoom || canvas.getZoom() || 1;
+
+    const dataUrl = canvas.toDataURL({
       format: "png",
-      multiplier: 1
+      multiplier: 1 / zoom
     });
 
-    const a = document.createElement("a");
-    a.href = dataUrl;
-    a.download = `90s-collage-${size.w}x${size.h}.png`;
-    a.click();
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = `90s-collage-${size.w}x${size.h}.png`;
+    link.click();
   };
 
-  const undo = () => historyRef.current?.undo?.();
-  const redo = () => historyRef.current?.redo?.();
-
   return (
-    <div className="appShell">
+    <div className="app">
       <Sidebar groups={groups} onAdd={addSticker} />
 
       <main className="main">
@@ -108,8 +94,8 @@ export default function App() {
           setCustomSize={setCustomSize}
           size={size}
           onExport={exportPNG}
-          onUndo={undo}
-          onRedo={redo}
+          onUndo={() => historyRef.current?.undo()}
+          onRedo={() => historyRef.current?.redo()}
           onBringForward={() => bringForward(canvasRef.current)}
           onSendBackwards={() => sendBackwards(canvasRef.current)}
           onBringToFront={() => bringToFront(canvasRef.current)}
@@ -118,7 +104,7 @@ export default function App() {
           onDelete={() => deleteActive(canvasRef.current)}
         />
 
-        <CanvasStage size={size} onReady={onCanvasReady} />
+        <CanvasStage size={size} onReady={handleCanvasReady} />
       </main>
     </div>
   );
