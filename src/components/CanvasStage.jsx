@@ -30,7 +30,9 @@ export default function CanvasStage({ size, onReady }) {
     });
 
     canvas.add(bgRect);
-    canvas.sendToBack(bgRect);
+
+    // Fabric v6 correct stacking
+    canvas.moveObjectTo(bgRect, 0);
 
     bgRef.current = bgRect;
     canvasRef.current = canvas;
@@ -58,7 +60,8 @@ export default function CanvasStage({ size, onReady }) {
       height: size.h,
     });
 
-    canvas.sendToBack(bgRect);
+    canvas.moveObjectTo(bgRect, 0);
+
     canvas.requestRenderAll();
   }, [size.w, size.h]);
 
