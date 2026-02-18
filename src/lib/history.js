@@ -5,7 +5,8 @@ export function createHistory(canvas, { limit = 40 } = {}) {
 
   const save = () => {
     if (isApplying) return;
-    const json = canvas.toDatalessJSON();
+    const json = canvas.toDatalessJSON(["backgroundColor"]);
+
 
     // Drop redo branch
     stack = stack.slice(0, index + 1);

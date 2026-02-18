@@ -6,7 +6,7 @@ export default function CanvasStage({ size, onReady }) {
   const canvasElRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // Create canvas ONCE
+  // Create Fabric canvas ONCE
   useEffect(() => {
     const el = canvasElRef.current;
     if (!el) return;
@@ -17,6 +17,8 @@ export default function CanvasStage({ size, onReady }) {
     });
 
     canvas.backgroundColor = "#ffffff";
+    canvas.setWidth(size.w);
+    canvas.setHeight(size.h);
     canvas.requestRenderAll();
 
     canvasRef.current = canvas;
@@ -29,7 +31,18 @@ export default function CanvasStage({ size, onReady }) {
     };
   }, []);
 
-  // Resize display without recreating canvas
+  // Update logical size only when preset changes
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    canvas.setWidth(size.w);
+    canvas.setHeight(size.h);
+    canvas.backgroundColor = "#ffffff";
+    canvas.requestRenderAll();
+  }, [size.w, size.h]);
+
+  // Responsive display scaling (non-destructive)
   useEffect(() => {
     const canvas = canvasRef.current;
     const wrap = wrapRef.current;
@@ -44,21 +57,7 @@ export default function CanvasStage({ size, onReady }) {
 
       const scale = Math.min(maxW / size.w, maxH / size.h, 1);
 
-      const dispW = Math.round(size.w * scale);
-      const dispH = Math.round(size.h * scale);
-
-      // Keep logical size intact
-      canvas.setDimensions({
-        width: size.w,
-        height: size.h,
-      });
-
       canvas.setZoom(scale);
-
-      // Adjust element display size
-      canvas.getElement().style.width = `${dispW}px`;
-      canvas.getElement().style.height = `${dispH}px`;
-
       canvas.__displayZoom = scale;
       canvas.requestRenderAll();
     };
@@ -67,7 +66,6 @@ export default function CanvasStage({ size, onReady }) {
 
     const ro = new ResizeObserver(() => fit());
     ro.observe(wrap);
-
     window.addEventListener("resize", fit);
 
     return () => {
@@ -79,7 +77,15 @@ export default function CanvasStage({ size, onReady }) {
   return (
     <div className="stageOuter">
       <div className="stageFrame" ref={wrapRef}>
-        <div className="canvasWrap" style={{ display: "grid", placeItems: "center" }}>
+        <div
+          className="canvasWrap"
+          style={{
+            display: "grid",
+            placeItems: "center",
+            width: "100%",
+            height: "100%",
+          }}
+        >
           <canvas ref={canvasElRef} />
         </div>
 
