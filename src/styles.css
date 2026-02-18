@@ -20,7 +20,9 @@ body {
   color: var(--text);
 }
 
-.app {
+/* ✅ Support both class names (your App.jsx uses appShell) */
+.app,
+.appShell {
   display: grid;
   grid-template-columns: 340px 1fr;
   height: 100vh;
@@ -176,4 +178,23 @@ body {
 .stageTip {
   margin-left: 10px;
   color: rgba(231,234,240,0.45);
+}
+
+/* Optional: make it usable on smaller screens */
+@media (max-width: 900px) {
+  .app,
+  .appShell {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .thumbGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
