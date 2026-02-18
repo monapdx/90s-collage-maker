@@ -1,4 +1,4 @@
-🎞️ 90s Collage Maker
+## 🎞️ 90s Collage Maker
 
 Create chaotic, nostalgic, glitter-soaked digital collages inspired by the golden age of the internet.
 
@@ -7,12 +7,12 @@ Create chaotic, nostalgic, glitter-soaked digital collages inspired by the golde
 ✨ Drag & drop
 ✨ Totally unhinged 90s energy
 
-🌐 Live Demo
+## 🌐 Live Demo
 
 👉 Try it here:
 https://monapdx.github.io/90s-collage-maker/
 
-📸 Features
+## 📸 Features
 
 Add themed 90s image packs
 
@@ -28,7 +28,7 @@ No login required
 
 No data stored
 
-🧠 Tech Stack
+## 🧠 Tech Stack
 
 React
 
@@ -40,7 +40,7 @@ CSS
 
 Deployed via GitHub Pages using GitHub Actions.
 
-🚀 Local Development
+## 🚀 Local Development
 
 Clone the repo:
 
@@ -48,33 +48,33 @@ git clone https://github.com/monapdx/90s-collage-maker.git
 cd 90s-collage-maker
 
 
-Install dependencies:
+### Install dependencies:
 
 npm install
 
 
-Run locally:
+### Run locally:
 
 npm run dev
 
 
-Build for production:
+### Build for production:
 
 npm run build
 
-📦 Deployment
+## 📦 Deployment
 
-This project uses:
+### This project uses:
 
 base: "/90s-collage-maker/" in vite.config.js
 
 GitHub Actions to deploy /dist to GitHub Pages
 
-Live URL structure:
+### Live URL structure:
 
 https://monapdx.github.io/90s-collage-maker/
 
-🎨 Why This Exists
+## 🎨 Why This Exists
 
 Because modern web design is too clean.
 
@@ -82,7 +82,7 @@ Because GeoCities deserved better.
 
 Because glitter GIFs never die.
 
-🛠 Future Ideas
+## 🛠 Future Ideas
 
 Export collage as PNG
 
@@ -96,12 +96,12 @@ Save & reload projects
 
 Mobile optimization pass
 
-🧃 Part of a Larger Toolkit
+## 🧃 Part of a Larger Toolkit
 
 This project is one of many frontend generators & creative tools built as part of a broader indie dev ecosystem.
 
 More tools coming soon.
 
-📜 License
+## 📜 License
 
 MIT — use it, remix it, go feral.
