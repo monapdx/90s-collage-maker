@@ -10,23 +10,12 @@ export function createHistory(canvas, { limit = 40 } = {}) {
 
     // Drop redo branch
     stack = stack.slice(0, index + 1);
-
     stack.push(json);
 
-    if (stack.length > limit) {
-      stack.shift();
-    }
-
+    if (stack.length > limit) stack.shift();
     index = stack.length - 1;
 
-    console.log(
-      "%cHistory Saved",
-      "color: lime",
-      "Stack length:",
-      stack.length,
-      "Index:",
-      index
-    );
+    console.log("History Saved", "Stack length:", stack.length, "Index:", index);
   };
 
   const apply = (json) =>
@@ -35,35 +24,40 @@ export function createHistory(canvas, { limit = 40 } = {}) {
 
       canvas.loadFromJSON(json, () => {
         canvas.requestRenderAll();
-        isApplying = false;
-        resolve();
+
+        // IMPORTANT:
+        // Fabric v6 can emit object:added/modified events *after* this callback.
+        // Keep isApplying true until next frame so history doesn't record during restore.
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            isApplying = false;
+            resolve();
+          });
+        });
       });
     });
 
   const undo = async () => {
-    console.log("%cUndo Called", "color: orange", "Index before:", index);
-
+    console.log("Undo Called", "Index before:", index);
     if (index <= 0) return;
 
     index -= 1;
     await apply(stack[index]);
 
-    console.log("%cUndo Complete", "color: orange", "Index now:", index);
+    console.log("Undo Complete", "Index now:", index);
   };
 
   const redo = async () => {
-    console.log("%cRedo Called", "color: cyan", "Index before:", index);
-
+    console.log("Redo Called", "Index before:", index);
     if (index >= stack.length - 1) return;
 
     index += 1;
     await apply(stack[index]);
 
-    console.log("%cRedo Complete", "color: cyan", "Index now:", index);
+    console.log("Redo Complete", "Index now:", index);
   };
 
   const init = () => {
-    // Important: ensure first state is saved AFTER canvas is ready
     save();
 
     const handler = () => save();
