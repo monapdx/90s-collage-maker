@@ -1,12 +1,13 @@
 import React, { useEffect, useRef } from "react";
-import { Canvas } from "fabric";
+import { Canvas, Rect } from "fabric";
 
 export default function CanvasStage({ size, onReady }) {
   const wrapRef = useRef(null);
   const canvasElRef = useRef(null);
   const canvasRef = useRef(null);
+  const bgRef = useRef(null);
 
-  // Create canvas ONCE
+  // Create Fabric canvas ONCE
   useEffect(() => {
     const el = canvasElRef.current;
     if (!el) return;
@@ -16,12 +17,31 @@ export default function CanvasStage({ size, onReady }) {
       selection: true,
     });
 
+    // Set logical size
     canvas.setWidth(size.w);
     canvas.setHeight(size.h);
-    canvas.backgroundColor = "#ffffff";
-    canvas.requestRenderAll();
 
+    // Create locked white background rectangle
+    const bgRect = new Rect({
+      left: 0,
+      top: 0,
+      width: size.w,
+      height: size.h,
+      fill: "#ffffff",
+      selectable: false,
+      evented: false,
+      hasControls: false,
+      hasBorders: false,
+      excludeFromExport: false,
+    });
+
+    canvas.add(bgRect);
+    canvas.sendToBack(bgRect);
+
+    bgRef.current = bgRect;
     canvasRef.current = canvas;
+
+    canvas.requestRenderAll();
 
     if (onReady) onReady(canvas);
 
@@ -31,20 +51,25 @@ export default function CanvasStage({ size, onReady }) {
     };
   }, []);
 
-  // Only adjust logical size if preset truly changes
+  // Update background + size when preset changes
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const bgRect = bgRef.current;
+    if (!canvas || !bgRect) return;
 
-    // Only change if dimensions actually differ
-    if (canvas.getWidth() !== size.w || canvas.getHeight() !== size.h) {
-      canvas.setWidth(size.w);
-      canvas.setHeight(size.h);
-      canvas.requestRenderAll();
-    }
+    canvas.setWidth(size.w);
+    canvas.setHeight(size.h);
+
+    bgRect.set({
+      width: size.w,
+      height: size.h,
+    });
+
+    canvas.sendToBack(bgRect);
+    canvas.requestRenderAll();
   }, [size.w, size.h]);
 
-  // Responsive display scaling (SAFE — zoom only)
+  // Responsive display scaling (zoom only — non-destructive)
   useEffect(() => {
     const canvas = canvasRef.current;
     const wrap = wrapRef.current;
