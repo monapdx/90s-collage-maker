@@ -24,47 +24,35 @@ export default function App() {
   const canvasRef = useRef(null);
   const historyRef = useRef(null);
 
-  // Resolve logical canvas size
   const size = useMemo(() => {
     if (presetId === "custom") return customSize;
     const preset = PRESETS.find((p) => p.id === presetId) || PRESETS[0];
     return { w: preset.w, h: preset.h };
   }, [presetId, customSize]);
 
-  // Load sticker manifest (GitHub Pages safe)
+  // Load manifest
   useEffect(() => {
     fetch(`${BASE}manifest.json`)
       .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setGroups(data);
-        } else {
-          setGroups([]);
-        }
-      })
-      .catch((err) => {
-        console.error("Manifest load error:", err);
-        setGroups([]);
-      });
+      .then((data) => setGroups(Array.isArray(data) ? data : []))
+      .catch(() => setGroups([]));
   }, [BASE]);
 
-  // Fabric canvas ready
   const handleCanvasReady = (canvas) => {
     canvasRef.current = canvas;
 
-    // Setup undo/redo history
-    historyRef.current = createHistory(canvas);
-    historyRef.current.init();
+    const history = createHistory(canvas);
+    historyRef.current = history;
+
+    // REQUIRED for your history implementation
+    history.init();
   };
 
-  // Add image from sidebar
   const addSticker = async (src) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    await addImageToCanvas(canvas, src);
+    if (!canvasRef.current) return;
+    await addImageToCanvas(canvasRef.current, src);
   };
 
-  // Export full-resolution PNG (ignores display zoom)
   const exportPNG = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -94,8 +82,8 @@ export default function App() {
           setCustomSize={setCustomSize}
           size={size}
           onExport={exportPNG}
-          onUndo={() => historyRef.current?.undo()}
-          onRedo={() => historyRef.current?.redo()}
+          onUndo={() => historyRef.current?.undo?.()}
+          onRedo={() => historyRef.current?.redo?.()}
           onBringForward={() => bringForward(canvasRef.current)}
           onSendBackwards={() => sendBackwards(canvasRef.current)}
           onBringToFront={() => bringToFront(canvasRef.current)}

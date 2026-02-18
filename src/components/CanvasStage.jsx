@@ -4,9 +4,9 @@ import { Canvas } from "fabric";
 export default function CanvasStage({ size, onReady }) {
   const wrapRef = useRef(null);
   const canvasElRef = useRef(null);
-  const fabricRef = useRef(null);
+  const canvasRef = useRef(null);
 
-  // Create canvas once
+  // Create canvas ONCE
   useEffect(() => {
     const el = canvasElRef.current;
     if (!el) return;
@@ -16,25 +16,22 @@ export default function CanvasStage({ size, onReady }) {
       selection: true,
     });
 
-    // Fabric v6 background
     canvas.backgroundColor = "#ffffff";
     canvas.requestRenderAll();
 
-    fabricRef.current = canvas;
+    canvasRef.current = canvas;
 
     if (onReady) onReady(canvas);
 
     return () => {
-      try {
-        canvas.dispose();
-      } catch {}
-      fabricRef.current = null;
+      canvas.dispose();
+      canvasRef.current = null;
     };
   }, []);
 
-  // Fit to container
+  // Resize display without recreating canvas
   useEffect(() => {
-    const canvas = fabricRef.current;
+    const canvas = canvasRef.current;
     const wrap = wrapRef.current;
     if (!canvas || !wrap) return;
 
@@ -50,16 +47,20 @@ export default function CanvasStage({ size, onReady }) {
       const dispW = Math.round(size.w * scale);
       const dispH = Math.round(size.h * scale);
 
-      canvas.setWidth(dispW);
-      canvas.setHeight(dispH);
+      // Keep logical size intact
+      canvas.setDimensions({
+        width: size.w,
+        height: size.h,
+      });
+
       canvas.setZoom(scale);
 
-      // Fabric v6 background
-      canvas.backgroundColor = "#ffffff";
-      canvas.requestRenderAll();
+      // Adjust element display size
+      canvas.getElement().style.width = `${dispW}px`;
+      canvas.getElement().style.height = `${dispH}px`;
 
       canvas.__displayZoom = scale;
-      canvas.__logicalSize = { ...size };
+      canvas.requestRenderAll();
     };
 
     fit();
@@ -78,19 +79,13 @@ export default function CanvasStage({ size, onReady }) {
   return (
     <div className="stageOuter">
       <div className="stageFrame" ref={wrapRef}>
-        <div
-          className="canvasWrap"
-          style={{ display: "grid", placeItems: "center" }}
-        >
+        <div className="canvasWrap" style={{ display: "grid", placeItems: "center" }}>
           <canvas ref={canvasElRef} />
         </div>
 
         <div className="stageMeta">
           Canvas: {size.w}×{size.h}
-          <span className="stageTip">
-            {" "}
-            • Drag stickers from the sidebar
-          </span>
+          <span className="stageTip"> • Drag stickers from the sidebar</span>
         </div>
       </div>
     </div>
