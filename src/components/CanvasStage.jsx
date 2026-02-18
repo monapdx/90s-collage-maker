@@ -6,7 +6,7 @@ export default function CanvasStage({ size, onReady }) {
   const canvasElRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // Create Fabric canvas ONCE
+  // Create canvas ONCE
   useEffect(() => {
     const el = canvasElRef.current;
     if (!el) return;
@@ -16,9 +16,9 @@ export default function CanvasStage({ size, onReady }) {
       selection: true,
     });
 
-    canvas.backgroundColor = "#ffffff";
     canvas.setWidth(size.w);
     canvas.setHeight(size.h);
+    canvas.backgroundColor = "#ffffff";
     canvas.requestRenderAll();
 
     canvasRef.current = canvas;
@@ -31,18 +31,20 @@ export default function CanvasStage({ size, onReady }) {
     };
   }, []);
 
-  // Update logical size only when preset changes
+  // Only adjust logical size if preset truly changes
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    canvas.setWidth(size.w);
-    canvas.setHeight(size.h);
-    canvas.backgroundColor = "#ffffff";
-    canvas.requestRenderAll();
+    // Only change if dimensions actually differ
+    if (canvas.getWidth() !== size.w || canvas.getHeight() !== size.h) {
+      canvas.setWidth(size.w);
+      canvas.setHeight(size.h);
+      canvas.requestRenderAll();
+    }
   }, [size.w, size.h]);
 
-  // Responsive display scaling (non-destructive)
+  // Responsive display scaling (SAFE — zoom only)
   useEffect(() => {
     const canvas = canvasRef.current;
     const wrap = wrapRef.current;
