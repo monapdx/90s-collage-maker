@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Canvas, Rect } from "fabric";
+import * as fabric from "fabric";
 
 export default function CanvasStage({ size, onReady }) {
   const wrapRef = useRef(null);
@@ -7,22 +7,19 @@ export default function CanvasStage({ size, onReady }) {
   const canvasRef = useRef(null);
   const bgRef = useRef(null);
 
-  // Create Fabric canvas ONCE
   useEffect(() => {
     const el = canvasElRef.current;
     if (!el) return;
 
-    const canvas = new Canvas(el, {
+    const canvas = new fabric.Canvas(el, {
       preserveObjectStacking: true,
       selection: true,
     });
 
-    // Set logical size
     canvas.setWidth(size.w);
     canvas.setHeight(size.h);
 
-    // Create locked white background rectangle
-    const bgRect = new Rect({
+    const bgRect = new fabric.Rect({
       left: 0,
       top: 0,
       width: size.w,
@@ -30,9 +27,6 @@ export default function CanvasStage({ size, onReady }) {
       fill: "#ffffff",
       selectable: false,
       evented: false,
-      hasControls: false,
-      hasBorders: false,
-      excludeFromExport: false,
     });
 
     canvas.add(bgRect);
@@ -51,7 +45,6 @@ export default function CanvasStage({ size, onReady }) {
     };
   }, []);
 
-  // Update background + size when preset changes
   useEffect(() => {
     const canvas = canvasRef.current;
     const bgRect = bgRef.current;
@@ -69,7 +62,6 @@ export default function CanvasStage({ size, onReady }) {
     canvas.requestRenderAll();
   }, [size.w, size.h]);
 
-  // Responsive display scaling (zoom only — non-destructive)
   useEffect(() => {
     const canvas = canvasRef.current;
     const wrap = wrapRef.current;
@@ -85,7 +77,6 @@ export default function CanvasStage({ size, onReady }) {
       const scale = Math.min(maxW / size.w, maxH / size.h, 1);
 
       canvas.setZoom(scale);
-      canvas.__displayZoom = scale;
       canvas.requestRenderAll();
     };
 
