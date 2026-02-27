@@ -1,6 +1,6 @@
 ## 🎞️ 90s Collage Maker
 
-<img src="https://raw.githubusercontent.com/monapdx/90s-collage-maker/refs/heads/main/social.png">
+<img src="[https://raw.githubusercontent.com/monapdx/90s-collage-maker/refs/heads/main/social.png](https://raw.githubusercontent.com/monapdx/90s-collage-maker/refs/heads/main/ChatGPT%20Image%20Feb%2026%2C%202026%2C%2007_01_33%20PM.png)">
 
 Create chaotic, nostalgic, glitter-soaked digital collages inspired by the golden age of the internet.
 
